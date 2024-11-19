@@ -71,7 +71,6 @@ def build_social_graph(users, posts, comments):
         # Connect comment to post
         G.add_edge(comment_id, comment_data["post_id"], connection_type="commented_on")
 
- 
     return G
 
 
@@ -143,7 +142,6 @@ def display_graph(graph, important_posts = [], filter = None):
         title += f": {len(important_posts)} Important Posts at the Top Sorted by {filter.capitalize()}"
 
     node_colors = [attributes.get("color") for _, attributes in graph.nodes(data = True)]
-    # node_size = [1000 if node in important_posts else 500 for node in graph.nodes]
     nx.draw(graph, pos, with_labels=True, node_color = node_colors, node_size = 1000, font_size = 14)
     nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size = 10)
 
