@@ -131,6 +131,8 @@ def display_graph(graph, important_posts = [], filter = None):
         important_posts (list): List of important post IDs to highlight.
         filter (str): The filter used to select important posts.
     """
+
+    plt.figure(figsize = (10, 10))
     pos = nx.spring_layout(graph, seed = 42, k = 2)
     edge_labels = nx.get_edge_attributes(graph, 'connection_type')
 
@@ -142,8 +144,14 @@ def display_graph(graph, important_posts = [], filter = None):
 
     node_colors = [attributes.get("color") for _, attributes in graph.nodes(data = True)]
     # node_size = [1000 if node in important_posts else 500 for node in graph.nodes]
-    nx.draw(graph, pos, with_labels=True, node_color = node_colors, node_size = 800)
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size = 6)
+    nx.draw(graph, pos, with_labels=True, node_color = node_colors, node_size = 1000, font_size = 14)
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size = 10)
+
+    legend = [plt.Line2D([], [], marker = 'o', color = 'w', label = 'User', markerfacecolor='green', markersize = 12),
+              plt.Line2D([], [], marker = 'o', color = 'w', label = 'Post', markerfacecolor='blue', markersize = 12),
+              plt.Line2D([], [], marker = 'o', color = 'w', label = 'Comment', markerfacecolor='magenta', markersize = 12)]
+    
+    plt.legend(handles=legend, loc='lower left', title = "Nodes")
     plt.title(title)
     plt.show()
 
