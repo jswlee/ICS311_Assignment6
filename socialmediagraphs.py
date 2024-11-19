@@ -13,6 +13,7 @@ def build_social_graph(users, posts, comments):
 
     Returns:
         nx.DiGraph: The constructed directed graph.
+        post_list: A list of tuples containing post_id, number of comments, and number of views.
     """
     G = nx.DiGraph()
 
@@ -27,8 +28,10 @@ def build_social_graph(users, posts, comments):
             location=user_data["attributes"]["location"],
             posts=user_data["posts"],
             comments=user_data["comments"],
-            posts_read=user_data["posts_read"]
+            posts_read=user_data["posts_read"],
+            color = "green"
         )
+
 
     # Add posts as nodes and connect them to their authors
     for post_id, post_data in posts.items():
@@ -39,8 +42,10 @@ def build_social_graph(users, posts, comments):
             content=post_data["content"],
             creation_time=post_data["creation_time"],
             comments=post_data["comments"],
-            viewed_by=post_data["viewed_by"]
+            viewed_by=post_data["viewed_by"],
+            color = "blue"
         )
+
         # Connect post to author
         G.add_edge(post_data["author"], post_id, connection_type="authored")
 
@@ -56,14 +61,17 @@ def build_social_graph(users, posts, comments):
             author=comment_data["author"],
             post_id=comment_data["post_id"],
             content=comment_data["content"],
-            creation_time=comment_data["creation_time"]
+            creation_time=comment_data["creation_time"],
+            color = "magenta"
         )
+
         # Connect comment to author
         G.add_edge(comment_data["author"], comment_id, connection_type="authored")
 
         # Connect comment to post
         G.add_edge(comment_id, comment_data["post_id"], connection_type="commented_on")
 
+ 
     return G
 
 
@@ -113,3 +121,53 @@ def generate_word_cloud(posts):
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.show()
+
+def display_graph(graph, important_posts = [], filter = None):
+    """
+    Displays the social media graph.
+    
+    Args:
+        graph (nx.DiGraph): The graph to display.
+        important_posts (list): List of important post IDs to highlight.
+        filter (str): The filter used to select important posts.
+    """
+    pos = nx.spring_layout(graph, seed = 42, k = 2)
+    edge_labels = nx.get_edge_attributes(graph, 'connection_type')
+
+    title = "Social Media Graph"
+    if important_posts:
+        for i, node in enumerate(important_posts):
+            pos[node] = ((.2 * i) - (.1 * len(important_posts)), 2)
+        title += f": {len(important_posts)} Important Posts at the Top Sorted by {filter.capitalize()}"
+
+    node_colors = [attributes.get("color") for _, attributes in graph.nodes(data = True)]
+    # node_size = [1000 if node in important_posts else 500 for node in graph.nodes]
+    nx.draw(graph, pos, with_labels=True, node_color = node_colors, node_size = 800)
+    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, font_size = 6)
+    plt.title(title)
+    plt.show()
+
+def display_important_posts(graph, filter = "mixed", views_importance = .5 ,n = 1):
+
+    comments_importance = 1 - views_importance
+
+    if filter == "mixed":
+        post_list = [(node, (comments_importance * len(attributes.get("comments", [])) + 
+                 views_importance * len(attributes.get("viewed_by", []))))
+                 for node, attributes in graph.nodes(data=True) 
+                 if attributes.get("type") == "post"]
+    
+    elif filter == "views":
+        post_list = [(node, len(attributes.get("viewed_by", [])))
+                 for node, attributes in graph.nodes(data=True) 
+                 if attributes.get("type") == "post"]
+        
+    elif filter == "comments":
+        post_list = [(node, len(attributes.get("comments", [])))
+                 for node, attributes in graph.nodes(data=True) 
+                 if attributes.get("type") == "post"]
+
+    post_list = sorted(post_list, key = lambda x: x[1], reverse = True)[:n]
+    important_posts = [post_id for post_id, _ in post_list]
+
+    display_graph(graph, important_posts, filter)
