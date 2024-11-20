@@ -154,7 +154,15 @@ def display_graph(graph, important_posts = [], filter = None):
     plt.show()
 
 def display_important_posts(graph, filter = "mixed", views_importance = .5 ,n = 1):
+    """
+    Displays the most important posts in the social media graph.
 
+    Args:
+        graph (nx.DiGraph): The graph to display.
+        filter (str): The filter to use for selecting important posts.
+        views_importance (float): The importance of views in the filter.
+        n (int): The number of important posts to display.
+    """
     comments_importance = 1 - views_importance
 
     if filter == "mixed":
@@ -179,6 +187,14 @@ def display_important_posts(graph, filter = "mixed", views_importance = .5 ,n = 
     display_graph(graph, important_posts, filter)
 
 def sort_nodes(posts, begin, end):
+        """
+        Sorts a list of posts by the number of comments and views.
+        
+        Args:
+            posts (list): List of tuples containing post_id, number of comments, and number of views.
+            begin (int): The starting index of the list.
+            end (int): The ending index of the list.
+        """
         if begin >= end:
             # Base case if the list has 1 or fewer elements
             return posts
@@ -190,7 +206,15 @@ def sort_nodes(posts, begin, end):
         return merge(posts, begin, mid, end)
 
 def merge(posts, begin, mid, end):
+    """
+    Merges two lists of posts together.
 
+    Args:
+        posts (list): List of tuples containing post_id, number of comments, and number of views.
+        begin (int): The starting index of the list.
+        mid (int): The middle index of the list.
+        end (int): The ending index of the list.
+    """
     # Sets the number of elements in the left and right lists
     num_left = mid - begin + 1
     num_right = end - mid
