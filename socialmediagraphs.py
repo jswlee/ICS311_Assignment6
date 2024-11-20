@@ -173,7 +173,61 @@ def display_important_posts(graph, filter = "mixed", views_importance = .5 ,n = 
                  for node, attributes in graph.nodes(data=True) 
                  if attributes.get("type") == "post"]
 
-    post_list = sorted(post_list, key = lambda x: x[1], reverse = True)[:n]
-    important_posts = [post_id for post_id, _ in post_list]
+    post_list = sort_nodes(post_list, 0, len(post_list) - 1)
+    important_posts = [post_id for post_id, _ in post_list[:n]]
 
     display_graph(graph, important_posts, filter)
+
+def sort_nodes(posts, begin, end):
+        if begin >= end:
+            # Base case if the list has 1 or fewer elements
+            return posts
+        mid = (begin + end) // 2 # Finds the middle of the list, rounded down
+        sort_nodes(posts, begin, mid) # Recursively splits the left list
+        sort_nodes(posts, mid + 1, end) # Recursively splits the right list
+
+        # Merges the left and right list for each recursion
+        return merge(posts, begin, mid, end)
+
+def merge(posts, begin, mid, end):
+
+    # Sets the number of elements in the left and right lists
+    num_left = mid - begin + 1
+    num_right = end - mid
+
+    # Creates two arrays for the left and right lists
+    left = [0] * num_left
+    right = [0] * num_right
+
+    # Fills the new left and right arrays with the posts from the original array
+    for i in range(0, num_left):
+        left[i] = posts[begin + i]
+    for j in range(0, num_right):
+        right[j] = posts[mid + j + 1]
+    
+    # Sets start indices for left, right, and original lists
+    i = 0
+    j = 0
+    k = begin
+
+    while i < num_left and j < num_right:
+        if left[i][1] >= right[j][1]:
+            posts[k] = left[i] # Adds the left list's word to the original array if it is less than right word
+            i += 1 # Increments to next left word
+        else:
+            posts[k] = right[j] # Adds the right word to the original array if it is is less than the left word
+            j += 1 # Increments index to next right word
+        k += 1 # Increments the position in the original array
+
+    # After one of the L or R lists is empty, adds the rest of the other list to the original array
+    while i < num_left:
+        posts[k] = left[i]
+        i += 1
+        k += 1
+    
+    while j < num_right:
+        posts[k] = right[j]
+        j += 1
+        k += 1
+
+    return posts
